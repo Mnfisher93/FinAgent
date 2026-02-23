@@ -50,8 +50,8 @@ Agent → Solana (SOL) is at $172.40 | 24h: -1.1% | 7d: +8.3%
 ### Setup
 
 ```bash
-git clone https://github.com/mnfisher93/ClaudeFintechAgent.git
-cd finagent-public
+git clone https://github.com/Mnfisher93/ClaudeFintechAgent.git
+cd ClaudeFintechAgent/finagent-public
 
 # Create your .env file
 cp .env.example .env
