@@ -1,7 +1,7 @@
 <p align="center">
   <h1 align="center">💹 FinAgent</h1>
   <p align="center">
-    <strong>Talk to an AI financial analyst in your terminal.</strong>
+    <strong>Talk to an AI quantative financial analyst in your terminal.</strong>
   </p>
   <p align="center">
     Ask about any stock, cryptocurrency, or prediction market — powered by Claude.
