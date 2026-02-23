@@ -1,107 +1,93 @@
-<p align="center">
-  <h1 align="center">💹 FinAgent</h1>
-  <p align="center">
-    <strong>Talk to an AI financial analyst in your terminal.</strong>
-  </p>
-  <p align="center">
-    Ask about any stock, cryptocurrency, or prediction market — powered by Claude.
-  </p>
-  <p align="center">
-    <img src="https://img.shields.io/badge/python-3.13+-blue?logo=python&logoColor=white" alt="Python">
-    <img src="https://img.shields.io/badge/AI-Claude-blueviolet" alt="Claude">
-    <img src="https://img.shields.io/badge/data-Yahoo%20Finance-purple" alt="Yahoo Finance">
-    <img src="https://img.shields.io/badge/data-CoinGecko-green" alt="CoinGecko">
-    <img src="https://img.shields.io/badge/data-Polymarket-orange" alt="Polymarket">
-  </p>
-</p>
+# 📊 Quantitative Fintech Agent
 
----
+> Talk to an AI financial analyst in your terminal.
+> Ask about any stock, cryptocurrency, or prediction market.
 
-## What is this?
+**Designed for Claude** — also works with GPT-4, Gemini, and Grok. Just set your API key and go.
 
-FinAgent is a terminal-based AI assistant that can look up **any stock or crypto in real-time** and answer your financial questions using Claude's tool-calling capabilities. Instead of manually checking Yahoo Finance or CoinGecko, just ask in plain English.
+| Provider | Model | Key Variable |
+|----------|-------|-------------|
+| 🟣 Anthropic | Claude Sonnet | `ANTHROPIC_API_KEY` |
+| 🟢 OpenAI | GPT-4o | `OPENAI_API_KEY` |
+| 🔵 Google | Gemini 2.0 Flash | `GEMINI_API_KEY` |
+| ⚫ xAI | Grok 3 | `XAI_API_KEY` |
+
+## ✨ Features
+
+| Category | What You Can Do |
+|----------|----------------|
+| **US Stocks** | Real-time quotes, historical data, company fundamentals for any NYSE/NASDAQ ticker |
+| **Crypto** | Price, market cap, volume for any cryptocurrency via CoinGecko |
+| **Prediction Markets** | Browse active Polymarket markets with probabilities |
+| **Analysis** | Returns, volatility, Sharpe ratio, max drawdown |
+| **Comparison** | Cross-asset correlation matrices |
 
 ### Demo
 
 ```
-You → What's Apple trading at?
+You → What's AAPL trading at?
+
   🔧 get_stock_quote({"ticker": "AAPL"})
-Agent → Apple (AAPL) is currently trading at $264.58.
-        Market cap: $4.05T | PE: 33.2 | Day range: $261.30 - $266.12
 
-You → Compare Tesla, Nvidia, and Microsoft over the last year
-  🔧 compare_assets({"tickers": ["TSLA", "NVDA", "MSFT"]})
-Agent → Correlation matrix of daily returns:
-        TSLA-NVDA: 0.52 | TSLA-MSFT: 0.38 | NVDA-MSFT: 0.68
+Agent → **Apple Inc. (AAPL)** is currently trading at **$264.58**.
 
-You → Price of Solana?
-  🔧 get_crypto_price({"coin_id": "solana"})
-Agent → Solana (SOL) is at $172.40 | 24h: -1.1% | 7d: +8.3%
-        Market cap: $84.2B (#5) | ATH: $293.31
+  • Previous Close: $262.83 (+0.67%)
+  • Day Range: $261.25 – $265.10
+  • 52-Week Range: $164.08 – $267.26
+  • Market Cap: $4.02T
+  • P/E Ratio: 41.3
 ```
 
 ## 🚀 Getting Started
 
 ### Prerequisites
 
-- Python 3.13+ and [uv](https://docs.astral.sh/uv/)
-- An [Anthropic API key](https://console.anthropic.com/)
+- Python 3.13+
+- [uv](https://docs.astral.sh/uv/) (Python package manager)
+- An API key from **any** supported provider
 
 ### Setup
 
 ```bash
-git clone https://github.com/mnfisher93/ClaudeFintechAgent.git
-cd finagent-public
+git clone https://github.com/Mnfisher93/ClaudeFintechAgent.git
+cd ClaudeFintechAgent/finagent-public
 
-# Create your .env file
+uv sync
+
 cp .env.example .env
-# Edit .env → paste your ANTHROPIC_API_KEY
+# Edit .env → paste your API key (any provider)
 
-# Run (uv installs everything automatically)
 uv run main.py
 ```
 
-That's it. No `pip install`, no virtual environment setup — `uv` handles everything.
+The agent auto-detects which key you've set and uses that provider.
 
 ## 🏗️ How It Works
 
 ```
 You type a question
-        ↓
-Claude reads your message
-        ↓
-Claude decides which tool(s) to call
-        ↓
+    ↓
+LLM reads your message
+    ↓
+LLM decides which tool(s) to call
+    ↓
 Tool fetches real data (Yahoo Finance / CoinGecko / Polymarket)
-        ↓
-Data is sent back to Claude
-        ↓
-Claude writes a natural language response
+    ↓
+Data is sent back to the LLM
+    ↓
+LLM writes a natural language response
 ```
 
-The agent has **9 tools** it can use:
-
-| Tool | What it does |
-|------|-------------|
-| `get_stock_quote` | Real-time stock price, volume, market cap |
-| `get_stock_history` | Historical prices over any period |
-| `get_stock_info` | Company fundamentals and financials |
-| `get_crypto_price` | Live crypto price from CoinGecko |
-| `get_crypto_top_n` | Top cryptos by market cap |
-| `search_crypto` | Find any coin by name or symbol |
-| `get_polymarket_markets` | Prediction market probabilities |
-| `analyze_asset` | Returns, volatility, Sharpe, max drawdown |
-| `compare_assets` | Cross-asset correlation analysis |
+The agent has **9 tools**: `get_stock_quote`, `get_stock_history`, `get_stock_info`, `get_crypto_price`, `get_crypto_top_n`, `search_crypto`, `get_polymarket_markets`, `analyze_asset`, `compare_assets`
 
 ## 📁 Project Structure
 
 ```
-finagent/
-├── .env.example          # API key template
-├── pyproject.toml        # Dependencies (managed by uv)
-├── main.py               # Chat interface
-├── agent.py              # Claude tool-calling engine
-├── analysis.py           # Basic financial metrics
+├── .env.example          # API key template (4 providers)
+├── pyproject.toml         # Dependencies (managed by uv)
+├── main.py                # Chat interface
+├── agent.py               # Multi-provider LLM engine with tool-calling
+├── analysis.py            # Financial metrics (Sharpe, drawdown, etc.)
 └── scrapers/
     ├── stock_scraper.py   # Yahoo Finance (any US stock)
     ├── crypto_scraper.py  # CoinGecko (any cryptocurrency)
@@ -110,15 +96,24 @@ finagent/
 
 ## 🔑 Configuration
 
-Create a `.env` file (or copy `.env.example`):
+Create a `.env` file (or copy `.env.example`) and set **one** key:
 
+```bash
+# Pick your provider:
+ANTHROPIC_API_KEY=sk-ant-...    # Claude (recommended)
+OPENAI_API_KEY=sk-...           # GPT-4o
+GEMINI_API_KEY=AI...            # Gemini
+XAI_API_KEY=xai-...             # Grok
 ```
-ANTHROPIC_API_KEY= your-api-key-here
+
+Optionally override the model:
+```bash
+MODEL=claude-sonnet-4-20250514
 ```
 
 ## Built With
 
-- [Claude](https://anthropic.com) (Anthropic) — AI reasoning and tool-calling
+- [Anthropic Claude](https://anthropic.com) / [OpenAI](https://openai.com) / [Google Gemini](https://ai.google.dev/) / [xAI Grok](https://x.ai/) — AI reasoning & tool-calling
 - [Yahoo Finance](https://finance.yahoo.com/) — US stock data
 - [CoinGecko](https://www.coingecko.com/) — Cryptocurrency data
 - [Polymarket](https://polymarket.com/) — Prediction market data
