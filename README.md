@@ -113,7 +113,7 @@ finagent/
 Create a `.env` file (or copy `.env.example`):
 
 ```
-ANTHROPIC_API_KEY= your-api-key-here
+ANTHROPIC_API_KEY=your-api-key-here
 ```
 
 ## Built With
