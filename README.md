@@ -1,129 +1,203 @@
 <p align="center">
-  <h1 align="center">💹 FinAgent</h1>
+  <h1 align="center">� FinAgent — Quantitative Financial Analysis Platform</h1>
   <p align="center">
-    <strong>Talk to a quantative financial analyst in your terminal, leveraging the AI of your choice.</strong>
+    <strong>An AI-powered terminal interface for real-time financial data retrieval, quantitative analysis, and market intelligence.</strong>
   </p>
   <p align="center">
-    Ask about any stock, cryptocurrency, or prediction market — powered by Claude.
+    <img src="https://img.shields.io/badge/python-3.13+-3776AB?style=for-the-badge&logo=python&logoColor=white" alt="Python">
+    <img src="https://img.shields.io/badge/AI_Engine-Claude_Sonnet-7C3AED?style=for-the-badge&logo=anthropic&logoColor=white" alt="Claude">
+    <img src="https://img.shields.io/badge/License-MIT-22C55E?style=for-the-badge" alt="MIT License">
   </p>
   <p align="center">
-    <img src="https://img.shields.io/badge/python-3.13+-blue?logo=python&logoColor=white" alt="Python">
-    <img src="https://img.shields.io/badge/AI-Claude-blueviolet" alt="Claude">
-    <img src="https://img.shields.io/badge/data-Yahoo%20Finance-purple" alt="Yahoo Finance">
-    <img src="https://img.shields.io/badge/data-CoinGecko-green" alt="CoinGecko">
-    <img src="https://img.shields.io/badge/data-Polymarket-orange" alt="Polymarket">
+    <img src="https://img.shields.io/badge/data-Yahoo_Finance-7B1FA2?style=flat-square" alt="Yahoo Finance">
+    <img src="https://img.shields.io/badge/data-CoinGecko-8DC63F?style=flat-square" alt="CoinGecko">
+    <img src="https://img.shields.io/badge/data-Polymarket-FF6B35?style=flat-square" alt="Polymarket">
+  </p>
+  <p align="center">
+    <a href="https://github.com/Mnfisher93/FinAgent/tree/multi-provider">🔀 Multi-Provider Branch (GPT-4 · Gemini · Grok)</a>
   </p>
 </p>
 
 ---
 
-## What is this?
+## 📋 Overview
 
-FinAgent is a terminal-based AI assistant that can look up **any stock or crypto in real-time** and answer your financial questions using Claude's tool-calling capabilities. Instead of manually checking Yahoo Finance or CoinGecko, just ask in plain English.
+FinAgent is a **terminal-based quantitative analysis assistant** that leverages Claude's function-calling architecture to provide institutional-grade financial data retrieval and analysis through natural language. The system integrates multiple data sources and executes structured API calls in a tool-use loop — delivering real-time market data, fundamental analysis, and cross-asset comparisons.
 
-### Demo
+> **🔀 Multi-Provider Support:** A [multi-provider branch](https://github.com/Mnfisher93/FinAgent/tree/multi-provider) extends compatibility to **OpenAI GPT-4**, **Google Gemini**, and **xAI Grok** — all sharing the same tool-calling architecture with provider-specific adapters.
+
+---
+
+## ⚡ Capabilities
+
+| Domain | Tools | Data Source |
+|--------|-------|-------------|
+| **Equities** | `get_stock_quote` · `get_stock_history` · `get_stock_info` | Yahoo Finance |
+| **Cryptocurrencies** | `get_crypto_price` · `get_crypto_top_n` · `search_crypto` | CoinGecko |
+| **Prediction Markets** | `get_polymarket_markets` | Polymarket |
+| **Quantitative Analysis** | `analyze_asset` · `compare_assets` | Computed |
+
+### 📈 Analysis Metrics
+- **Returns** — Total return, annualized return over arbitrary periods
+- **Risk** — Annualized volatility, maximum drawdown, drawdown duration
+- **Risk-Adjusted** — Sharpe ratio (rf = 5%)
+- **Cross-Asset** — Pearson correlation matrices for portfolio construction
+
+---
+
+## 🖥️ Demo
 
 ```
 You → What's Apple trading at?
   🔧 get_stock_quote({"ticker": "AAPL"})
-Agent → Apple (AAPL) is currently trading at $264.58.
-        Market cap: $4.05T | PE: 33.2 | Day range: $261.30 - $266.12
+
+Agent → Apple Inc. (AAPL) is currently trading at $264.58.
+        Market Cap: $4.05T | P/E: 33.2 | Day Range: $261.30 – $266.12
+        52-Week: $164.08 – $267.26 | Volume: 48.2M
 
 You → Compare Tesla, Nvidia, and Microsoft over the last year
   🔧 compare_assets({"tickers": ["TSLA", "NVDA", "MSFT"]})
-Agent → Correlation matrix of daily returns:
-        TSLA-NVDA: 0.52 | TSLA-MSFT: 0.38 | NVDA-MSFT: 0.68
 
-You → Price of Solana?
-  🔧 get_crypto_price({"coin_id": "solana"})
-Agent → Solana (SOL) is at $172.40 | 24h: -1.1% | 7d: +8.3%
-        Market cap: $84.2B (#5) | ATH: $293.31
+Agent → Correlation matrix of daily returns (1Y):
+        TSLA-NVDA: 0.52 | TSLA-MSFT: 0.38 | NVDA-MSFT: 0.68
+        Highest correlation: NVDA-MSFT (0.68) — both driven by AI spending
+
+You → Analyze Nvidia's risk profile
+  🔧 analyze_asset({"ticker": "NVDA", "period": "2y"})
+
+Agent → NVDA 2-Year Risk Profile:
+        Annualized Return: +142.3% | Volatility: 58.7%
+        Sharpe Ratio: 2.34 | Max Drawdown: -33.1%
 ```
+
+---
 
 ## 🚀 Getting Started
 
 ### Prerequisites
 
-- Python 3.13+ and [uv](https://docs.astral.sh/uv/)
-- An [Anthropic API key](https://console.anthropic.com/)
+| Requirement | Details |
+|-------------|---------|
+| **Python** | 3.13+ |
+| **Package Manager** | [uv](https://docs.astral.sh/uv/) |
+| **API Key** | [Anthropic Console](https://console.anthropic.com/) |
 
-### Setup
+### Installation
+
+**1. Install `uv`** (Python package manager — [docs](https://docs.astral.sh/uv/))
 
 ```bash
-git clone https://github.com/Mnfisher93/ClaudeFintechAgent.git
-cd ClaudeFintechAgent/finagent-public
+# macOS / Linux
+curl -LsSf https://astral.sh/uv/install.sh | sh
 
-# Create your .env file
+# Windows
+powershell -ExecutionPolicy ByPass -c "irm https://astral.sh/uv/install.ps1 | iex"
+
+# or via Homebrew
+brew install uv
+```
+
+**2. Clone and run**
+
+```bash
+git clone https://github.com/Mnfisher93/FinAgent.git
+cd FinAgent/finagent-public
+
 cp .env.example .env
-# Edit .env → paste your ANTHROPIC_API_KEY
+# → Add your ANTHROPIC_API_KEY
 
-# Run (uv installs everything automatically)
 uv run main.py
 ```
 
-That's it. No `pip install`, no virtual environment setup — `uv` handles everything.
+> `uv` handles all dependency resolution and virtual environment creation automatically — no manual `pip install` required.
 
-## 🏗️ How It Works
+---
+
+## 🏗️ Architecture
 
 ```
-You type a question
-        ↓
-Claude reads your message
-        ↓
-Claude decides which tool(s) to call
-        ↓
-Tool fetches real data (Yahoo Finance / CoinGecko / Polymarket)
-        ↓
-Data is sent back to Claude
-        ↓
-Claude writes a natural language response
+┌─────────────────────────────────────────────────────┐
+│                    User Interface                    │
+│                   (main.py — REPL)                  │
+└─────────────────────┬───────────────────────────────┘
+                      │
+┌─────────────────────▼───────────────────────────────┐
+│                   Agent Core                         │
+│              (agent.py — Tool Loop)                  │
+│                                                      │
+│   User Message → Claude API → Tool Selection         │
+│   Tool Result  → Claude API → Natural Language       │
+└──────┬──────────────┬──────────────┬────────────────┘
+       │              │              │
+┌──────▼─────┐ ┌──────▼─────┐ ┌─────▼──────┐
+│  Equities  │ │   Crypto   │ │ Prediction │
+│  Scraper   │ │  Scraper   │ │  Markets   │
+│  (Yahoo)   │ │ (CoinGecko)│ │(Polymarket)│
+└────────────┘ └────────────┘ └────────────┘
 ```
 
-The agent has **9 tools** it can use:
+The agent operates in a **tool-use loop**: Claude receives each user message, determines which data tools to invoke, executes them against live APIs, and synthesizes the results into a coherent analytical response. This cycle repeats per turn until no further tool calls are needed.
 
-| Tool | What it does |
-|------|-------------|
-| `get_stock_quote` | Real-time stock price, volume, market cap |
-| `get_stock_history` | Historical prices over any period |
-| `get_stock_info` | Company fundamentals and financials |
-| `get_crypto_price` | Live crypto price from CoinGecko |
-| `get_crypto_top_n` | Top cryptos by market cap |
-| `search_crypto` | Find any coin by name or symbol |
-| `get_polymarket_markets` | Prediction market probabilities |
-| `analyze_asset` | Returns, volatility, Sharpe, max drawdown |
-| `compare_assets` | Cross-asset correlation analysis |
+---
 
 ## 📁 Project Structure
 
 ```
-finagent/
-├── .env.example          # API key template
-├── pyproject.toml        # Dependencies (managed by uv)
-├── main.py               # Chat interface
-├── agent.py              # Claude tool-calling engine
-├── analysis.py           # Basic financial metrics
+finagent-public/
+├── .env.example              # API key configuration template
+├── pyproject.toml             # Dependency manifest (uv)
+├── main.py                    # Interactive REPL interface
+├── agent.py                   # Claude tool-calling engine (9 tools)
+├── analysis.py                # Quantitative metrics (Sharpe, drawdown)
 └── scrapers/
-    ├── stock_scraper.py   # Yahoo Finance (any US stock)
-    ├── crypto_scraper.py  # CoinGecko (any cryptocurrency)
-    └── polymarket_scraper.py  # Prediction markets
+    ├── stock_scraper.py       # Yahoo Finance — equities
+    ├── crypto_scraper.py      # CoinGecko — cryptocurrencies
+    └── polymarket_scraper.py  # Polymarket — prediction markets
 ```
 
-## 🔑 Configuration
+---
 
-Create a `.env` file (or copy `.env.example`):
+## � Multi-Provider Branch
 
-```
+The [`multi-provider`](https://github.com/Mnfisher93/FinAgent/tree/multi-provider) branch extends the agent to work with any major LLM provider:
+
+| Provider | Model | Status |
+|----------|-------|--------|
+| 🟣 Anthropic | Claude Sonnet | ✅ Primary (this branch) |
+| 🟢 OpenAI | GPT-4o | ✅ Supported |
+| 🔵 Google | Gemini 2.0 Flash | ✅ Supported |
+| ⚫ xAI | Grok 3 | ✅ Supported |
+
+The multi-provider implementation uses OpenAI-compatible endpoints for Gemini and Grok, requiring **zero additional dependencies** — the same two SDKs (`anthropic`, `openai`) handle all four providers.
+
+---
+
+## 🔧 Configuration
+
+```bash
+# .env
 ANTHROPIC_API_KEY=your-api-key-here
 ```
 
-## Built With
+Optional model override:
+```bash
+MODEL=claude-sonnet-4-20250514
+```
 
-- [Claude](https://anthropic.com) (Anthropic) — AI reasoning and tool-calling
-- [Yahoo Finance](https://finance.yahoo.com/) — US stock data
-- [CoinGecko](https://www.coingecko.com/) — Cryptocurrency data
-- [Polymarket](https://polymarket.com/) — Prediction market data
-- [uv](https://docs.astral.sh/uv/) — Python package management
+---
 
-## License
+## 📦 Dependencies
 
-MIT
+| Package | Purpose |
+|---------|---------|
+| `anthropic` | Claude API client |
+| `yfinance` | Yahoo Finance data |
+| `pandas` / `numpy` | Quantitative computation |
+| `requests` | HTTP client (CoinGecko, Polymarket) |
+| `python-dotenv` | Environment variable management |
+
+---
+
+## 📄 License
+
+MIT — see [LICENSE](LICENSE) for details.
