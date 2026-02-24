@@ -84,29 +84,58 @@ Agent → NVDA 2-Year Risk Profile:
 
 ### Installation
 
-**1. Install `uv`** (Python package manager — [docs](https://docs.astral.sh/uv/))
+**1. Install [`uv`](https://docs.astral.sh/uv/)** (Python package manager)
 
+macOS / Linux:
 ```bash
-# macOS / Linux
 curl -LsSf https://astral.sh/uv/install.sh | sh
+```
 
-# Windows
+Windows (PowerShell):
+```powershell
 powershell -ExecutionPolicy ByPass -c "irm https://astral.sh/uv/install.ps1 | iex"
+```
 
-# or via Homebrew
+Or via Homebrew (macOS):
+```bash
 brew install uv
 ```
 
-**2. Clone and run**
+**2. Clone the repository**
 
 ```bash
 git clone https://github.com/Mnfisher93/FinAgent.git
+```
+
+**3. Navigate into the project**
+
+```bash
 cd FinAgent/finagent-public
+```
+
+**4. Switch to the multi-provider branch**
+
+```bash
 git checkout multi-provider
+```
 
+**5. Set up your API key**
+
+macOS / Linux:
+```bash
 cp .env.example .env
-# → Add your API key (any provider)
+```
 
+Windows (PowerShell):
+```powershell
+Copy-Item .env.example .env
+```
+
+Open `.env` in a text editor and paste your API key for any supported provider (see [Configuration](#-multi-provider-architecture) below).
+
+**6. Run the agent**
+
+```bash
 uv run main.py
 ```
 
