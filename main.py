@@ -1,5 +1,7 @@
 """
-FinAgent — Interactive Financial AI Agent
+Quantitative Fintech Agent — Interactive Chat Interface
+
+Supports: Claude (Anthropic) • GPT-4 (OpenAI) • Gemini (Google) • Grok (xAI)
 
 Run: uv run main.py
 """
@@ -11,8 +13,10 @@ from agent import FinancialAgent
 BANNER = """
 ╔══════════════════════════════════════════════════════════════╗
 ║                                                              ║
-║              💹  FinAgent  💹                               ║
+║        📊  Quantitative Fintech Agent  📊                   ║
 ║        AI-Powered Financial Analyst                          ║
+║                                                              ║
+║   Supports: Claude • GPT-4 • Gemini • Grok                 ║
 ║                                                              ║
 ║   "What's AAPL trading at?"                                 ║
 ║   "Price of Bitcoin and Ethereum"                           ║
