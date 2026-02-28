@@ -14,6 +14,7 @@ plus basic analysis and cross-asset comparison.
 
 import json
 import os
+from pathlib import Path
 import traceback
 
 import numpy as np
@@ -25,7 +26,7 @@ from scrapers.crypto_scraper import get_crypto_price, get_crypto_top_n, search_c
 from scrapers.polymarket_scraper import fetch_polymarket_data
 from analysis import analyze_returns, compare_assets
 
-load_dotenv()
+load_dotenv(Path(__file__).resolve().parent / ".env")
 
 MAX_TOKENS = 4096
 

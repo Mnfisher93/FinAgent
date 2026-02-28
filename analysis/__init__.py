@@ -1,10 +1,16 @@
 """
-Simple analysis module — basic return and risk metrics.
+Analysis package — quantitative analysis, time series modeling, and visualization.
 """
 
 import numpy as np
 import pandas as pd
 
+from .quant_analysis import QuantAnalyzer
+from .time_series import TimeSeriesAnalyzer
+from .visualizations import Visualizer
+
+
+# ── Simple analysis functions (used by the agent's tool-calling) ────────
 
 def analyze_returns(prices: pd.Series, name: str = "Asset") -> dict:
     """
@@ -16,15 +22,11 @@ def analyze_returns(prices: pd.Series, name: str = "Asset") -> dict:
     daily_ret = prices.pct_change().dropna()
     trading_days = 252
 
-    # Returns
     total_return = (prices.iloc[-1] / prices.iloc[0]) - 1
     ann_return = (1 + daily_ret).prod() ** (trading_days / len(daily_ret)) - 1
     ann_vol = daily_ret.std() * np.sqrt(trading_days)
-
-    # Sharpe (assuming 5% risk-free)
     sharpe = (ann_return - 0.05) / ann_vol if ann_vol > 0 else 0
 
-    # Max drawdown
     cumulative = (1 + daily_ret).cumprod()
     running_max = cumulative.cummax()
     drawdown = (cumulative - running_max) / running_max
@@ -55,3 +57,13 @@ def compare_assets(price_dict: dict[str, pd.Series]) -> dict:
         "correlation_matrix": corr.to_dict(),
         "assets": list(price_dict.keys()),
     }
+
+
+__all__ = [
+    "QuantAnalyzer",
+    "TimeSeriesAnalyzer",
+    "Visualizer",
+    "analyze_returns",
+    "compare_assets",
+]
+
