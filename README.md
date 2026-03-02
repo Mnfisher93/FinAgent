@@ -69,18 +69,11 @@ Agent → TSLA Options (expires 2026-03-06):
         Mean Call IV: 68.2% | Mean Put IV: 72.1%
         Most active: $350C (vol: 12,341) | $300P (vol: 8,229)
 
-You → How does NVDA beta compare to SPY?
-  🔧 run_regression({"mode": "linear", "target_ticker": "NVDA", "factor_tickers": ["SPY"]})
-
-Agent → NVDA has a beta of 1.82 relative to SPY. R² = 0.41 — SPY explains
-        41% of NVDA's return variance. It's a high-beta growth stock.
-
 You → Backtest SMA crossover on Nvidia over 5 years
   🔧 backtest_strategy({"ticker": "NVDA", "strategy": "sma"})
 
 Agent → SMA 50/200 Crossover on NVDA (5Y):
         Strategy Return: +380% | Buy-and-Hold: +520%
-        Strategy UNDERPERFORMS buy-and-hold ❌
         Sharpe: 1.42 | Max Drawdown: -28% | 12 trades
 ```
 
@@ -88,14 +81,9 @@ Agent → SMA 50/200 Crossover on NVDA (5Y):
 
 ## 🚀 Getting Started
 
-### Prerequisites
+### Step 1 · Install `uv`
 
-| Requirement | What It Is |
-|-------------|-----------|
-| **Python 3.13+** | [python.org/downloads](https://www.python.org/downloads/) |
-| **uv** | Package manager — installs everything for you |
-
-### Install `uv` (skip if you already have it)
+> Skip this if you already have it. Check with `uv --version`.
 
 **macOS / Linux:**
 ```bash
@@ -107,23 +95,20 @@ curl -LsSf https://astral.sh/uv/install.sh | sh
 powershell -ExecutionPolicy ByPass -c "irm https://astral.sh/uv/install.ps1 | iex"
 ```
 
-### Run FinAgent
+### Step 2 · Run FinAgent
 
 ```bash
-git clone https://github.com/Mnfisher93/FinAgent.git
-cd FinAgent
-uv run main.py
+git clone https://github.com/Mnfisher93/FinAgent.git && cd FinAgent && uv run main.py
 ```
 
-**That's it.** On first launch, the program walks you through setup:
+**That's it.** The program handles everything:
 
-1. **Pick your AI provider** — Claude, GPT-4, Gemini, or Grok
-2. **Paste your API key** — get one free from any provider below
-3. **Pick your model** — choose from multiple options per provider
+- 📦 Installs all dependencies automatically
+- 🔑 Walks you through API key setup on first launch
+- 🤖 Lets you pick your provider and model
+- 💾 Saves your settings — never asks again
 
-Your settings are saved automatically. You won't be asked again.
-
-> `uv` handles all dependency installation and virtual environment creation behind the scenes. The first run may take 30–60 seconds to install packages.
+> **Tip:** Google Gemini has a generous **free tier** — great for trying FinAgent at zero cost. Get a key at [aistudio.google.com/apikey](https://aistudio.google.com/apikey).
 
 ---
 
@@ -138,9 +123,7 @@ Choose your provider **and** your model. Every provider supports multiple models
 | 🔵 **Google** | `gemini-2.5-flash` · `gemini-2.0-flash` · `gemini-2.5-pro` | [aistudio.google.com](https://aistudio.google.com/apikey) |
 | ⚫ **xAI** | `grok-4` · `grok-3` · `grok-3-fast` | [console.x.ai](https://console.x.ai/) |
 
-All providers share the **same 16-tool architecture** — zero extra dependencies. Gemini and Grok use OpenAI-compatible endpoints, so the same two SDKs (`anthropic` + `openai`) handle everything.
-
-> **Tip:** Google Gemini has a generous free tier — great for trying FinAgent at zero cost.
+All providers share the **same 16-tool architecture**. Gemini and Grok use OpenAI-compatible endpoints, so just two SDKs (`anthropic` + `openai`) handle everything.
 
 ---
 

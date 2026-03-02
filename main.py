@@ -193,6 +193,8 @@ def main():
     selected_model = None
     if not _has_valid_key():
         selected_model = run_first_time_setup()
+        # Replay banner so user sees fresh start with their config
+        print(BANNER)
 
     # Now import and create agent (after env is set)
     from agent import FinancialAgent
