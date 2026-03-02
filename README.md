@@ -1,11 +1,15 @@
 <p align="center">
-  <h1 align="center">� FinAgent — Quantitative Financial Analysis Platform</h1>
+  <h1 align="center">💹 FinAgent</h1>
   <p align="center">
-    <strong>An AI-powered terminal interface for real-time financial data retrieval, quantitative analysis, and market intelligence.</strong>
+    <strong>Quantitative AI finance agent — multi-provider LLM architecture (Claude, GPT-4, Gemini, Grok) with 15 tool-calling capabilities for equities, crypto, prediction markets & algorithmic backtesting</strong>
+  </p>
+  <p align="center">
+    Stocks · Crypto · Prediction Markets · Quantitative Analysis · ML Signals · Backtesting
   </p>
   <p align="center">
     <img src="https://img.shields.io/badge/python-3.13+-3776AB?style=for-the-badge&logo=python&logoColor=white" alt="Python">
-    <img src="https://img.shields.io/badge/AI_Engine-Claude_Sonnet-7C3AED?style=for-the-badge&logo=anthropic&logoColor=white" alt="Claude">
+    <img src="https://img.shields.io/badge/AI-Claude_·_GPT--4_·_Gemini_·_Grok-7C3AED?style=for-the-badge" alt="Multi-Provider">
+    <img src="https://img.shields.io/badge/tools-15-22C55E?style=for-the-badge" alt="15 Tools">
     <img src="https://img.shields.io/badge/License-MIT-22C55E?style=for-the-badge" alt="MIT License">
   </p>
   <p align="center">
@@ -13,35 +17,37 @@
     <img src="https://img.shields.io/badge/data-CoinGecko-8DC63F?style=flat-square" alt="CoinGecko">
     <img src="https://img.shields.io/badge/data-Polymarket-FF6B35?style=flat-square" alt="Polymarket">
   </p>
-  <p align="center">
-    <a href="https://github.com/Mnfisher93/FinAgent/tree/multi-provider">🔀 Multi-Provider Branch (GPT-4 · Gemini · Grok)</a>
-  </p>
 </p>
 
 ---
 
 ## 📋 Overview
 
-FinAgent is a **terminal-based quantitative analysis assistant** that leverages Claude's function-calling architecture to provide institutional-grade financial data retrieval and analysis through natural language. The system integrates multiple data sources and executes structured API calls in a tool-use loop — delivering real-time market data, fundamental analysis, and cross-asset comparisons.
+FinAgent is a **terminal-based quantitative analysis assistant** that leverages AI tool-calling to provide institutional-grade financial analysis through natural language. Set one API key, ask a question — the AI autonomously selects from **15 tools**, fetches live data, runs quantitative models, and delivers a synthesized response.
 
-> **🔀 Multi-Provider Support:** A [multi-provider branch](https://github.com/Mnfisher93/FinAgent/tree/multi-provider) extends compatibility to **OpenAI GPT-4**, **Google Gemini**, and **xAI Grok** — all sharing the same tool-calling architecture with provider-specific adapters.
+> 📋 **[Full Capabilities Reference →](CAPABILITIES.md)** — detailed breakdown of all 15 tools, analysis modules, and data sources.
+
+**All data sources are free. No API keys needed for data.** You only need one LLM provider key.
 
 ---
 
 ## ⚡ Capabilities
 
-| Domain | Tools | Data Source |
-|--------|-------|-------------|
+| Domain | Tools | Source |
+|--------|-------|--------|
 | **Equities** | `get_stock_quote` · `get_stock_history` · `get_stock_info` | Yahoo Finance |
-| **Cryptocurrencies** | `get_crypto_price` · `get_crypto_top_n` · `search_crypto` | CoinGecko |
+| **Crypto** | `get_crypto_price` · `get_crypto_top_n` · `search_crypto` | CoinGecko |
 | **Prediction Markets** | `get_polymarket_markets` | Polymarket |
-| **Quantitative Analysis** | `analyze_asset` · `compare_assets` | Computed |
+| **Quant Analysis** | `analyze_asset` · `analyze_time_series` · `compare_assets` | Computed |
+| **Machine Learning** | `run_regression` · `run_clustering_pca` · `run_feature_importance` | Computed |
+| **Signals & Backtesting** | `generate_signals` · `backtest_strategy` | Computed |
 
-### 📈 Analysis Metrics
-- **Returns** — Total return, annualized return over arbitrary periods
-- **Risk** — Annualized volatility, maximum drawdown, drawdown duration
-- **Risk-Adjusted** — Sharpe ratio (rf = 5%)
-- **Cross-Asset** — Pearson correlation matrices for portfolio construction
+### 📈 Analysis Depth
+- **Risk Metrics** — Sharpe, Sortino, Calmar ratios, VaR (historical + parametric + Monte Carlo), CVaR
+- **Time Series** — ADF/KPSS stationarity tests, ARIMA forecasting, GARCH volatility
+- **Machine Learning** — Linear/logistic regression, K-Means clustering, PCA, Random Forest
+- **Signals** — Composite buy/sell score from 5 technical indicators (SMA, EMA, RSI, MACD, Bollinger)
+- **Backtesting** — SMA/EMA crossover strategies vs. buy-and-hold benchmark
 
 ---
 
@@ -55,19 +61,29 @@ Agent → Apple Inc. (AAPL) is currently trading at $264.58.
         Market Cap: $4.05T | P/E: 33.2 | Day Range: $261.30 – $266.12
         52-Week: $164.08 – $267.26 | Volume: 48.2M
 
-You → Compare Tesla, Nvidia, and Microsoft over the last year
-  🔧 compare_assets({"tickers": ["TSLA", "NVDA", "MSFT"]})
+You → Run a regression of NVDA against SPY
+  🔧 run_regression({"mode": "linear", "target_ticker": "NVDA", "factor_tickers": ["SPY"]})
 
-Agent → Correlation matrix of daily returns (1Y):
-        TSLA-NVDA: 0.52 | TSLA-MSFT: 0.38 | NVDA-MSFT: 0.68
-        Highest correlation: NVDA-MSFT (0.68) — both driven by AI spending
+Agent → NVDA has a beta of 1.82 relative to SPY. R² = 0.41 — SPY explains
+        41% of NVDA's return variance. It's a high-beta growth stock.
 
-You → Analyze Nvidia's risk profile
-  🔧 analyze_asset({"ticker": "NVDA", "period": "2y"})
+You → Generate trading signals for Tesla
+  🔧 generate_signals({"ticker": "TSLA"})
 
-Agent → NVDA 2-Year Risk Profile:
-        Annualized Return: +142.3% | Volatility: 58.7%
-        Sharpe Ratio: 2.34 | Max Drawdown: -33.1%
+Agent → TSLA Composite Signal: +0.35 (BUY 🟢)
+        ├── SMA Crossover: BUY  (50 > 200)
+        ├── EMA Crossover: BUY  (12 > 26)
+        ├── RSI: HOLD  (52.3 — neutral zone)
+        ├── MACD: BUY  (above signal line)
+        └── Bollinger: HOLD  (within bands)
+
+You → Backtest SMA crossover on Nvidia over 5 years
+  🔧 backtest_strategy({"ticker": "NVDA", "strategy": "sma"})
+
+Agent → SMA 50/200 Crossover on NVDA (5Y):
+        Strategy Return: +380% | Buy-and-Hold: +520%
+        Strategy UNDERPERFORMS buy-and-hold ❌
+        Sharpe: 1.42 | Max Drawdown: -28% | 12 trades
 ```
 
 ---
@@ -80,50 +96,23 @@ Agent → NVDA 2-Year Risk Profile:
 |-------------|---------|
 | **Python** | 3.13+ |
 | **Package Manager** | [uv](https://docs.astral.sh/uv/) |
-| **API Key** | [Anthropic Console](https://console.anthropic.com/) |
+| **LLM API Key** | Any one of: [Anthropic](https://console.anthropic.com/) · [OpenAI](https://platform.openai.com/) · [Google AI](https://aistudio.google.com/apikey) · [xAI](https://console.x.ai/) |
 
 ### Installation
 
-**1. Install [`uv`](https://docs.astral.sh/uv/)** (Python package manager)
-
-macOS / Linux:
 ```bash
+# 1. Install uv (skip if you already have it)
 curl -LsSf https://astral.sh/uv/install.sh | sh
-```
 
-Windows (PowerShell):
-```powershell
-powershell -ExecutionPolicy ByPass -c "irm https://astral.sh/uv/install.ps1 | iex"
-```
-
-Or via Homebrew (macOS):
-```bash
-brew install uv
-```
-
-**2. Clone the repository**
-
-```bash
+# 2. Clone the repository
 git clone https://github.com/Mnfisher93/FinAgent.git
-```
+cd FinAgent
 
-**3. Navigate into the project**
-
-```bash
-cd FinAgent/finagent-public
-```
-
-**4. Set up your API key**
-
-```bash
+# 3. Set up your API key
 cp .env.example .env
-```
+# Edit .env — set ONE of: ANTHROPIC_API_KEY, OPENAI_API_KEY, GEMINI_API_KEY, or XAI_API_KEY
 
-Open `.env` in a text editor and paste your [Anthropic API key](https://console.anthropic.com/).
-
-**5. Run the agent**
-
-```bash
+# 4. Run the agent
 uv run main.py
 ```
 
@@ -131,75 +120,41 @@ uv run main.py
 
 ---
 
+## 🤖 Multi-Provider Support
+
+The agent auto-detects which API key you've set and uses that provider:
+
+| Provider | Model | Setup |
+|----------|-------|-------|
+| 🟣 Anthropic | Claude Sonnet 4 | `ANTHROPIC_API_KEY=...` |
+| 🟢 OpenAI | GPT-4o | `OPENAI_API_KEY=...` |
+| 🔵 Google | Gemini 2.0 Flash | `GEMINI_API_KEY=...` |
+| ⚫ xAI | Grok 3 Mini | `XAI_API_KEY=...` |
+
+All providers share the **same 15-tool architecture** — zero extra dependencies. Gemini and Grok use OpenAI-compatible endpoints, so the same two SDKs (`anthropic` + `openai`) handle everything.
+
+---
+
 ## 🏗️ Architecture
 
 ```
-┌─────────────────────────────────────────────────────┐
-│                    User Interface                    │
-│                   (main.py — REPL)                  │
-└─────────────────────┬───────────────────────────────┘
-                      │
-┌─────────────────────▼───────────────────────────────┐
-│                   Agent Core                         │
-│              (agent.py — Tool Loop)                  │
-│                                                      │
-│   User Message → Claude API → Tool Selection         │
-│   Tool Result  → Claude API → Natural Language       │
-└──────┬──────────────┬──────────────┬────────────────┘
-       │              │              │
-┌──────▼─────┐ ┌──────▼─────┐ ┌─────▼──────┐
-│  Equities  │ │   Crypto   │ │ Prediction │
-│  Scraper   │ │  Scraper   │ │  Markets   │
-│  (Yahoo)   │ │ (CoinGecko)│ │(Polymarket)│
-└────────────┘ └────────────┘ └────────────┘
-```
-
-The agent operates in a **tool-use loop**: Claude receives each user message, determines which data tools to invoke, executes them against live APIs, and synthesizes the results into a coherent analytical response. This cycle repeats per turn until no further tool calls are needed.
-
----
-
-## 📁 Project Structure
-
-```
-finagent-public/
-├── .env.example              # API key configuration template
-├── pyproject.toml             # Dependency manifest (uv)
-├── main.py                    # Interactive REPL interface
-├── agent.py                   # Claude tool-calling engine (9 tools)
-├── analysis.py                # Quantitative metrics (Sharpe, drawdown)
-└── scrapers/
-    ├── stock_scraper.py       # Yahoo Finance — equities
-    ├── crypto_scraper.py      # CoinGecko — cryptocurrencies
-    └── polymarket_scraper.py  # Polymarket — prediction markets
-```
-
----
-
-## � Multi-Provider Branch
-
-The [`multi-provider`](https://github.com/Mnfisher93/FinAgent/tree/multi-provider) branch extends the agent to work with any major LLM provider:
-
-| Provider | Model | Status |
-|----------|-------|--------|
-| 🟣 Anthropic | Claude Sonnet | ✅ Primary (this branch) |
-| 🟢 OpenAI | GPT-4o | ✅ Supported |
-| 🔵 Google | Gemini 2.0 Flash | ✅ Supported |
-| ⚫ xAI | Grok 3 | ✅ Supported |
-
-The multi-provider implementation uses OpenAI-compatible endpoints for Gemini and Grok, requiring **zero additional dependencies** — the same two SDKs (`anthropic`, `openai`) handle all four providers.
-
----
-
-## 🔧 Configuration
-
-```bash
-# .env
-ANTHROPIC_API_KEY=your-api-key-here
-```
-
-Optional model override:
-```bash
-MODEL=claude-sonnet-4-20250514
+finagent/
+├── .env.example                  # API key template
+├── pyproject.toml                # Dependencies (uv)
+├── CAPABILITIES.md               # Full capabilities reference
+├── main.py                       # Interactive chat REPL
+├── agent.py                      # Multi-provider tool-calling engine (15 tools)
+├── scrapers/
+│   ├── stock_scraper.py          # Any NYSE/NASDAQ ticker (Yahoo Finance)
+│   ├── crypto_scraper.py         # CoinGecko + optional CoinMarketCap
+│   └── polymarket_scraper.py     # Prediction market data
+└── analysis/
+    ├── quant_analysis.py         # Returns, risk metrics, VaR, correlations
+    ├── time_series.py            # ARIMA, GARCH, stationarity tests
+    ├── advanced_stats.py         # Regression, clustering, PCA, Random Forest
+    ├── signals.py                # Trading signal generators (5 indicators)
+    ├── backtest.py               # Strategy backtesting engine
+    └── visualizations.py         # Publication-quality charts
 ```
 
 ---
@@ -208,14 +163,26 @@ MODEL=claude-sonnet-4-20250514
 
 | Package | Purpose |
 |---------|---------|
-| `anthropic` | Claude API client |
+| `anthropic` | Claude API |
+| `openai` | GPT-4 / Gemini / Grok |
 | `yfinance` | Yahoo Finance data |
-| `pandas` / `numpy` | Quantitative computation |
-| `requests` | HTTP client (CoinGecko, Polymarket) |
-| `python-dotenv` | Environment variable management |
+| `pandas` + `numpy` | Data manipulation |
+| `scipy` + `statsmodels` | Statistical analysis + ARIMA |
+| `arch` | GARCH volatility modeling |
+| `scikit-learn` | ML (regression, clustering, PCA, Random Forest) |
+| `ta` | Technical indicators (SMA, EMA, RSI, MACD, Bollinger) |
+| `matplotlib` + `seaborn` | Charts |
+| `requests` | HTTP (CoinGecko, Polymarket) |
+| `python-dotenv` | Environment configuration |
 
 ---
 
 ## 📄 License
 
 MIT — see [LICENSE](LICENSE) for details.
+
+---
+
+<p align="center">
+  Built with Claude · GPT-4 · Gemini · Grok · Yahoo Finance · CoinGecko · Polymarket
+</p>

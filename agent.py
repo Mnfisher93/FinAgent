@@ -8,8 +8,10 @@ Supports multiple LLM providers (designed for Claude, works with all):
   • xAI (Grok)          — set XAI_API_KEY
 
 The agent auto-detects which key you have and uses that provider.
-9 tools: stock quote/history/info, crypto price/top/search, polymarket,
-plus basic analysis and cross-asset comparison.
+
+15 tools: market data (stocks, crypto, prediction markets), quantitative
+analysis, time series modeling, machine learning, trading signals, and
+strategy backtesting.
 """
 
 import json
@@ -24,27 +26,39 @@ from dotenv import load_dotenv
 from scrapers.stock_scraper import get_stock_quote, get_stock_history, get_stock_info
 from scrapers.crypto_scraper import get_crypto_price, get_crypto_top_n, search_crypto
 from scrapers.polymarket_scraper import fetch_polymarket_data
-from analysis import analyze_returns, compare_assets
+from analysis.quant_analysis import QuantAnalyzer
+from analysis.time_series import TimeSeriesAnalyzer
+from analysis.advanced_stats import (
+    run_linear_regression, run_multi_regression,
+    run_logistic_regression, run_clustering, run_pca, run_feature_importance,
+)
+from analysis.signals import composite_signal
+from analysis.backtest import backtest_sma_crossover, backtest_ema_crossover, compare_strategies
 
 load_dotenv(Path(__file__).resolve().parent / ".env")
 
 MAX_TOKENS = 4096
 
-SYSTEM_PROMPT = """You are a financial analyst AI assistant with access to real-time data. You can:
+SYSTEM_PROMPT = """You are a highly knowledgeable financial analyst AI assistant. You have access to real-time and historical data through specialized tools for:
 
-• Look up any US stock (NYSE/NASDAQ) — quotes, history, company info
-• Check cryptocurrency prices via CoinGecko
-• Browse Polymarket prediction markets
-• Analyze asset returns, volatility, Sharpe ratio, and drawdowns
-• Compare assets with correlation analysis
+• **US Stocks** (NYSE, NASDAQ) — quotes, historical prices, company fundamentals
+• **Cryptocurrencies** — prices via CoinGecko for any coin (Bitcoin, Ethereum, Solana, etc.)
+• **Prediction Markets** — Polymarket data on active markets
+• **Quantitative Analysis** — Sharpe ratio, VaR, volatility, ARIMA, GARCH, correlations
+• **Advanced Statistics** — linear/logistic regression, K-Means clustering, PCA, Random Forest
+• **Trading Signals** — composite buy/sell scoring from 5 technical indicators
+• **Backtesting** — strategy performance vs. buy-and-hold benchmarks
 
-Rules:
-1. Always use your tools to fetch real data — never make up numbers.
-2. Present data clearly with proper formatting.
+When answering:
+1. Always use your tools to fetch real data — never make up prices or statistics.
+2. Present numbers clearly with proper formatting (percentages, currency, etc.).
 3. Provide context and interpretation, not just raw data.
-4. Be concise but insightful.
+4. For analysis questions, explain what the metrics mean in practical terms.
+5. If asked to compare assets, use your compare_assets tool for correlation analysis.
+6. For regression/clustering tasks, explain the statistical results in practical terms.
+7. Be concise but thorough — a graduate-level financial analyst tone.
 
-You're chatting in a terminal. Use clear text formatting."""
+You are talking to a user in a terminal chat interface. Format your responses with clear structure using markdown-like formatting (bold with **, headers with #, etc.) that still reads well in a terminal."""
 
 # ============================================================================
 # Tool Definitions (provider-agnostic, converted per-provider at runtime)
@@ -53,7 +67,7 @@ You're chatting in a terminal. Use clear text formatting."""
 TOOLS_SPEC = [
     {
         "name": "get_stock_quote",
-        "description": "Current stock quote for any US stock: price, volume, market cap, PE ratio, 52-week range.",
+        "description": "Current stock quote for any US stock: price, volume, market cap, PE ratio, 52-week range, moving averages.",
         "parameters": {
             "type": "object",
             "properties": {
@@ -64,7 +78,7 @@ TOOLS_SPEC = [
     },
     {
         "name": "get_stock_history",
-        "description": "Historical OHLCV data for any US stock. Returns summary with price range, total return, and recent prices.",
+        "description": "Historical OHLCV data for any US stock with auto-computed technical indicators (SMA, EMA, RSI, MACD, Bollinger Bands).",
         "parameters": {
             "type": "object",
             "properties": {
@@ -76,7 +90,7 @@ TOOLS_SPEC = [
     },
     {
         "name": "get_stock_info",
-        "description": "Company fundamentals: sector, industry, description, PE ratio, margins, beta, dividends.",
+        "description": "Company fundamentals: sector, industry, description, PE ratio, margins, beta, dividends, debt-to-equity, FCF.",
         "parameters": {
             "type": "object",
             "properties": {
@@ -87,7 +101,7 @@ TOOLS_SPEC = [
     },
     {
         "name": "get_crypto_price",
-        "description": "Current crypto price, market cap, volume, and price changes (24h/7d/30d). Supports any coin.",
+        "description": "Current crypto price, market cap, volume, and price changes (24h/7d/30d). Supports any coin via CoinGecko.",
         "parameters": {
             "type": "object",
             "properties": {
@@ -109,7 +123,7 @@ TOOLS_SPEC = [
     },
     {
         "name": "search_crypto",
-        "description": "Search for a cryptocurrency by name or symbol.",
+        "description": "Search for a cryptocurrency by name or symbol. Returns matching coins with IDs and market cap ranks.",
         "parameters": {
             "type": "object",
             "properties": {
@@ -120,30 +134,43 @@ TOOLS_SPEC = [
     },
     {
         "name": "get_polymarket_markets",
-        "description": "Active Polymarket prediction markets with probabilities, volume, and liquidity.",
+        "description": "Active Polymarket prediction markets with outcome probabilities, volume, and liquidity.",
         "parameters": {
             "type": "object",
             "properties": {
-                "limit": {"type": "integer", "description": "Number of markets (default: 20)", "default": 20}
+                "limit": {"type": "integer", "description": "Number of markets (default: 20)", "default": 20},
+                "min_volume": {"type": "number", "description": "Minimum volume in USD (default: 10000)", "default": 10000}
             },
             "required": []
         }
     },
     {
         "name": "analyze_asset",
-        "description": "Analyze a stock or crypto: total return, annualized return, volatility, Sharpe ratio, and max drawdown.",
+        "description": "Comprehensive quantitative analysis: annualized return, volatility, Sharpe, Sortino, Calmar ratios, max drawdown, VaR (historical + parametric + Monte Carlo), CVaR, skewness, kurtosis.",
         "parameters": {
             "type": "object",
             "properties": {
                 "ticker": {"type": "string", "description": "Ticker (e.g., 'AAPL', 'BTC-USD')"},
-                "period": {"type": "string", "description": "Period for analysis", "default": "1y"}
+                "period": {"type": "string", "description": "Analysis period: '6mo', '1y', '2y', '5y'", "default": "1y"}
+            },
+            "required": ["ticker"]
+        }
+    },
+    {
+        "name": "analyze_time_series",
+        "description": "Time series analysis: stationarity tests (ADF, KPSS), ARIMA model fitting, and GARCH volatility modeling. Returns model parameters, AIC/BIC, and interpretations.",
+        "parameters": {
+            "type": "object",
+            "properties": {
+                "ticker": {"type": "string", "description": "Stock ticker or crypto-USD pair"},
+                "period": {"type": "string", "description": "Data period for analysis", "default": "2y"}
             },
             "required": ["ticker"]
         }
     },
     {
         "name": "compare_assets",
-        "description": "Compare multiple assets: compute correlation matrix of daily returns.",
+        "description": "Compare multiple assets: compute cross-correlation matrix and annualized covariance matrix of daily returns.",
         "parameters": {
             "type": "object",
             "properties": {
@@ -151,6 +178,74 @@ TOOLS_SPEC = [
                 "period": {"type": "string", "description": "Data period", "default": "1y"}
             },
             "required": ["tickers"]
+        }
+    },
+    {
+        "name": "run_regression",
+        "description": "Regression analysis. Linear regression finds beta/R² between two assets (like CAPM). Logistic regression predicts next-day up/down direction using lagged returns.",
+        "parameters": {
+            "type": "object",
+            "properties": {
+                "mode": {"type": "string", "enum": ["linear", "logistic"], "description": "'linear' for beta/factor analysis, 'logistic' for direction prediction"},
+                "target_ticker": {"type": "string", "description": "Target asset ticker (Y variable)"},
+                "factor_tickers": {"type": "array", "items": {"type": "string"}, "description": "Factor tickers (X variables) — for linear regression. For logistic, leave empty."},
+                "period": {"type": "string", "description": "Data period", "default": "2y"}
+            },
+            "required": ["mode", "target_ticker"]
+        }
+    },
+    {
+        "name": "run_clustering_pca",
+        "description": "Cluster assets by behavior patterns (K-Means) and identify principal risk factors (PCA). Useful for portfolio construction.",
+        "parameters": {
+            "type": "object",
+            "properties": {
+                "tickers": {"type": "array", "items": {"type": "string"}, "description": "List of tickers to analyze (need at least 4)"},
+                "n_clusters": {"type": "integer", "description": "Number of clusters (default: 3)", "default": 3},
+                "period": {"type": "string", "description": "Data period", "default": "1y"}
+            },
+            "required": ["tickers"]
+        }
+    },
+    {
+        "name": "run_feature_importance",
+        "description": "Use Random Forest to identify which assets/factors most influence a target asset's price direction. Shows feature importance scores.",
+        "parameters": {
+            "type": "object",
+            "properties": {
+                "target_ticker": {"type": "string", "description": "Target asset to analyze"},
+                "feature_tickers": {"type": "array", "items": {"type": "string"}, "description": "Potential driver tickers (e.g., ['SPY', 'QQQ', 'DXY', 'GLD'])"},
+                "period": {"type": "string", "description": "Data period", "default": "2y"}
+            },
+            "required": ["target_ticker", "feature_tickers"]
+        }
+    },
+    {
+        "name": "generate_signals",
+        "description": "Generate buy/sell trading signals. Runs 5 indicators (SMA crossover, EMA crossover, RSI, MACD, Bollinger Bands) and produces a composite signal score from -1 (strong sell) to +1 (strong buy).",
+        "parameters": {
+            "type": "object",
+            "properties": {
+                "ticker": {"type": "string", "description": "Ticker symbol (e.g., 'AAPL', 'NVDA', 'BTC-USD')"},
+                "period": {"type": "string", "description": "Data period (need at least '1y' for SMA 200)", "default": "2y"}
+            },
+            "required": ["ticker"]
+        }
+    },
+    {
+        "name": "backtest_strategy",
+        "description": "Backtest a moving average crossover strategy against historical data. Compares strategy returns vs. buy-and-hold. Can test SMA or EMA crossovers, or compare multiple strategies.",
+        "parameters": {
+            "type": "object",
+            "properties": {
+                "ticker": {"type": "string", "description": "Ticker to backtest on"},
+                "strategy": {"type": "string", "enum": ["sma", "ema", "compare_all"], "description": "'sma' for SMA crossover, 'ema' for EMA crossover, 'compare_all' to test all"},
+                "short_window": {"type": "integer", "description": "Short MA period (default: 50 for SMA, 12 for EMA)"},
+                "long_window": {"type": "integer", "description": "Long MA period (default: 200 for SMA, 26 for EMA)"},
+                "period": {"type": "string", "description": "Historical data period", "default": "5y"},
+                "initial_capital": {"type": "number", "description": "Starting capital in USD (default: 10000)", "default": 10000}
+            },
+            "required": ["ticker", "strategy"]
         }
     },
 ]
@@ -170,7 +265,7 @@ def execute_tool(name: str, args: dict) -> str:
             df = get_stock_history(args["ticker"], period=args.get("period", "1y"))
             if df.empty:
                 return json.dumps({"error": f"No data for {args['ticker']}"})
-            return json.dumps({
+            summary = {
                 "ticker": args["ticker"].upper(),
                 "period": args.get("period", "1y"),
                 "rows": len(df),
@@ -178,9 +273,15 @@ def execute_tool(name: str, args: dict) -> str:
                 "latest_close": float(df["Close"].iloc[-1]),
                 "period_high": float(df["High"].max()),
                 "period_low": float(df["Low"].min()),
+                "avg_volume": int(df["Volume"].mean()),
                 "total_return": f"{((df['Close'].iloc[-1] / df['Close'].iloc[0]) - 1):.2%}",
                 "last_5_days": df[["Close", "Volume"]].tail(5).to_dict(),
-            }, indent=2, default=str)
+            }
+            if "RSI_14" in df.columns:
+                summary["current_rsi"] = float(df["RSI_14"].iloc[-1]) if pd.notna(df["RSI_14"].iloc[-1]) else None
+            if "MACD" in df.columns:
+                summary["current_macd"] = float(df["MACD"].iloc[-1]) if pd.notna(df["MACD"].iloc[-1]) else None
+            return json.dumps(summary, indent=2, default=str)
 
         elif name == "get_stock_info":
             return json.dumps(get_stock_info(args["ticker"]), indent=2, default=str)
@@ -195,37 +296,189 @@ def execute_tool(name: str, args: dict) -> str:
             return json.dumps(search_crypto(args["query"]), indent=2, default=str)
 
         elif name == "get_polymarket_markets":
-            df = fetch_polymarket_data(limit=args.get("limit", 20))
+            limit = args.get("limit", 20)
+            min_volume = args.get("min_volume", 10000)
+            df = fetch_polymarket_data(limit=limit, min_volume=min_volume)
             if df.empty:
-                return json.dumps({"message": "No markets found."})
-            return json.dumps(
-                df[["question", "outcome_prices", "volume"]].head(20).to_dict(orient="records"),
-                indent=2, default=str
-            )
+                return json.dumps({"message": "No markets found matching criteria."})
+            records = df[["question", "outcome_prices", "volume", "volume_24hr", "liquidity"]].head(limit).to_dict(orient="records")
+            return json.dumps(records, indent=2, default=str)
 
         elif name == "analyze_asset":
             import yfinance as yf
-            df = yf.Ticker(args["ticker"]).history(period=args.get("period", "1y"))
+            ticker = args["ticker"]
+            period = args.get("period", "1y")
+            df = yf.Ticker(ticker).history(period=period)
             if df.empty:
-                return json.dumps({"error": f"No data for {args['ticker']}"})
-            return json.dumps(analyze_returns(df["Close"], name=args["ticker"]), indent=2, default=str)
+                return json.dumps({"error": f"No data for {ticker}"})
+            quant = QuantAnalyzer()
+            result = quant.summary(df["Close"], name=ticker)
+            return json.dumps(result, indent=2, default=str)
+
+        elif name == "analyze_time_series":
+            import yfinance as yf
+            ticker = args["ticker"]
+            period = args.get("period", "2y")
+            df = yf.Ticker(ticker).history(period=period)
+            if df.empty:
+                return json.dumps({"error": f"No data for {ticker}"})
+            ts = TimeSeriesAnalyzer()
+            result = ts.full_analysis(df["Close"], name=ticker)
+            serializable = {
+                "name": result["name"],
+                "stationarity": {
+                    "adf_p_value": result["stationarity"]["adf"]["p_value"],
+                    "adf_stationary": result["stationarity"]["adf"]["is_stationary"],
+                    "adf_conclusion": result["stationarity"]["adf"]["conclusion"],
+                    "kpss_p_value": result["stationarity"]["kpss"]["p_value"],
+                    "kpss_stationary": result["stationarity"]["kpss"]["is_stationary"],
+                    "kpss_conclusion": result["stationarity"]["kpss"]["conclusion"],
+                    "interpretation": result["stationarity"]["interpretation"],
+                },
+                "arima": {
+                    "order": str(result["arima"]["order"]),
+                    "aic": result["arima"]["aic"],
+                    "bic": result["arima"]["bic"],
+                    "coefficients": {k: float(v) for k, v in result["arima"]["coefficients"].items()},
+                },
+                "garch": {
+                    "model_type": result["garch"]["model_type"],
+                    "distribution": result["garch"]["distribution"],
+                    "aic": result["garch"]["aic"],
+                    "bic": result["garch"]["bic"],
+                    "params": {k: float(v) for k, v in result["garch"]["params"].items()},
+                },
+            }
+            return json.dumps(serializable, indent=2, default=str)
 
         elif name == "compare_assets":
             import yfinance as yf
+            tickers = args["tickers"]
+            period = args.get("period", "1y")
             price_dict = {}
-            for t in args["tickers"]:
-                df = yf.Ticker(t).history(period=args.get("period", "1y"))
+            for t in tickers:
+                df = yf.Ticker(t).history(period=period)
                 if not df.empty:
                     price_dict[t.upper()] = df["Close"]
             if len(price_dict) < 2:
-                return json.dumps({"error": "Need at least 2 assets with data."})
-            return json.dumps(compare_assets(price_dict), indent=2, default=str)
+                return json.dumps({"error": "Need at least 2 assets with data to compare."})
+            quant = QuantAnalyzer()
+            corr = quant.correlation_matrix(price_dict)
+            cov = quant.covariance_matrix(price_dict)
+            result = {
+                "correlation_matrix": corr.to_dict(),
+                "covariance_matrix_annualized": cov.to_dict(),
+                "assets": list(price_dict.keys()),
+                "period": period,
+            }
+            return json.dumps(result, indent=2, default=str)
+
+        elif name == "run_regression":
+            import yfinance as yf
+            mode = args["mode"]
+            target = args["target_ticker"]
+            period = args.get("period", "2y")
+            target_df = yf.Ticker(target).history(period=period)
+            if target_df.empty:
+                return json.dumps({"error": f"No data for {target}"})
+
+            if mode == "logistic":
+                result = run_logistic_regression(target_df["Close"], name=target)
+                return json.dumps(result, indent=2, default=str)
+            else:
+                factor_tickers = args.get("factor_tickers", [])
+                if not factor_tickers:
+                    return json.dumps({"error": "Linear regression needs factor_tickers"})
+                if len(factor_tickers) == 1:
+                    factor_df = yf.Ticker(factor_tickers[0]).history(period=period)
+                    if factor_df.empty:
+                        return json.dumps({"error": f"No data for {factor_tickers[0]}"})
+                    result = run_linear_regression(
+                        target_df["Close"], factor_df["Close"],
+                        y_name=target, x_name=factor_tickers[0]
+                    )
+                else:
+                    x_dict = {}
+                    for t in factor_tickers:
+                        fdf = yf.Ticker(t).history(period=period)
+                        if not fdf.empty:
+                            x_dict[t] = fdf["Close"]
+                    result = run_multi_regression(target_df["Close"], x_dict, y_name=target)
+                return json.dumps(result, indent=2, default=str)
+
+        elif name == "run_clustering_pca":
+            import yfinance as yf
+            tickers = args["tickers"]
+            n_clusters = args.get("n_clusters", 3)
+            period = args.get("period", "1y")
+            price_dict = {}
+            for t in tickers:
+                df = yf.Ticker(t).history(period=period)
+                if not df.empty:
+                    price_dict[t.upper()] = df["Close"]
+            if len(price_dict) < 3:
+                return json.dumps({"error": "Need at least 3 assets with data."})
+            cluster_result = run_clustering(price_dict, n_clusters=n_clusters)
+            pca_result = run_pca(price_dict)
+            return json.dumps({
+                "clustering": cluster_result,
+                "pca": pca_result,
+            }, indent=2, default=str)
+
+        elif name == "run_feature_importance":
+            import yfinance as yf
+            target = args["target_ticker"]
+            features = args["feature_tickers"]
+            period = args.get("period", "2y")
+            target_df = yf.Ticker(target).history(period=period)
+            if target_df.empty:
+                return json.dumps({"error": f"No data for {target}"})
+            feature_dict = {}
+            for t in features:
+                fdf = yf.Ticker(t).history(period=period)
+                if not fdf.empty:
+                    feature_dict[t.upper()] = fdf["Close"]
+            if len(feature_dict) < 2:
+                return json.dumps({"error": "Need at least 2 feature assets with data."})
+            result = run_feature_importance(target_df["Close"], feature_dict, target_name=target)
+            return json.dumps(result, indent=2, default=str)
+
+        elif name == "generate_signals":
+            import yfinance as yf
+            ticker = args["ticker"]
+            period = args.get("period", "2y")
+            df = yf.Ticker(ticker).history(period=period)
+            if df.empty:
+                return json.dumps({"error": f"No data for {ticker}"})
+            result = composite_signal(df["Close"], name=ticker)
+            return json.dumps(result, indent=2, default=str)
+
+        elif name == "backtest_strategy":
+            import yfinance as yf
+            ticker = args["ticker"]
+            strategy = args["strategy"]
+            period = args.get("period", "5y")
+            capital = args.get("initial_capital", 10000)
+            df = yf.Ticker(ticker).history(period=period)
+            if df.empty:
+                return json.dumps({"error": f"No data for {ticker}"})
+            if strategy == "compare_all":
+                result = compare_strategies(df["Close"], name=ticker, initial_capital=capital)
+            elif strategy == "ema":
+                short = args.get("short_window", 12)
+                long = args.get("long_window", 26)
+                result = backtest_ema_crossover(df["Close"], short, long, capital, ticker)
+            else:
+                short = args.get("short_window", 50)
+                long = args.get("long_window", 200)
+                result = backtest_sma_crossover(df["Close"], short, long, capital, ticker)
+            return json.dumps(result, indent=2, default=str)
 
         else:
             return json.dumps({"error": f"Unknown tool: {name}"})
 
     except Exception as e:
-        return json.dumps({"error": str(e)})
+        return json.dumps({"error": str(e), "traceback": traceback.format_exc()})
 
 
 # ============================================================================
@@ -259,7 +512,7 @@ PROVIDERS = {
         "emoji": "🟣",
         "default_model": "claude-sonnet-4-20250514",
         "url": "https://console.anthropic.com/",
-        "api_type": "anthropic",       # uses anthropic SDK
+        "api_type": "anthropic",
     },
     "openai": {
         "env_key": "OPENAI_API_KEY",
@@ -267,8 +520,8 @@ PROVIDERS = {
         "emoji": "🟢",
         "default_model": "gpt-4o",
         "url": "https://platform.openai.com/api-keys",
-        "api_type": "openai",          # uses openai SDK
-        "base_url": None,              # default OpenAI endpoint
+        "api_type": "openai",
+        "base_url": None,
     },
     "gemini": {
         "env_key": "GEMINI_API_KEY",
@@ -276,7 +529,7 @@ PROVIDERS = {
         "emoji": "🔵",
         "default_model": "gemini-2.0-flash",
         "url": "https://aistudio.google.com/apikey",
-        "api_type": "openai",          # Gemini has an OpenAI-compatible endpoint
+        "api_type": "openai",
         "base_url": "https://generativelanguage.googleapis.com/v1beta/openai/",
     },
     "xai": {
@@ -285,7 +538,7 @@ PROVIDERS = {
         "emoji": "⚫",
         "default_model": "grok-3-mini-fast",
         "url": "https://console.x.ai/",
-        "api_type": "openai",          # Grok uses OpenAI-compatible API
+        "api_type": "openai",
         "base_url": "https://api.x.ai/v1",
     },
 }
@@ -301,6 +554,7 @@ class FinancialAgent:
 
     Auto-detects which API key is set and uses that provider.
     Supports: Anthropic (Claude), OpenAI (GPT-4o), Google (Gemini), xAI (Grok).
+    15 tools for market data, quantitative analysis, ML, signals, and backtesting.
     """
 
     def __init__(self):
