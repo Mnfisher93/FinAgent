@@ -61,7 +61,7 @@ SETUP_PROVIDERS = {
         "name": "xai",
         "label": "xAI (Grok)",
         "env_key": "XAI_API_KEY",
-        "models": ["grok-4", "grok-3", "grok-3-fast"],
+        "models": ["grok-4-1-fast-non-reasoning", "grok-4-1-fast-reasoning", "grok-3-fast"],
         "url": "https://console.x.ai/",
         "free": "Free credits on signup",
     },

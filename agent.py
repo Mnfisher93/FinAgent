@@ -556,7 +556,7 @@ PROVIDERS = {
         "env_key": "XAI_API_KEY",
         "label": "xAI (Grok)",
         "emoji": "⚫",
-        "models": ["grok-4", "grok-3", "grok-3-fast"],
+        "models": ["grok-4-1-fast-non-reasoning", "grok-4-1-fast-reasoning", "grok-3-fast"],
         "url": "https://console.x.ai/",
         "api_type": "openai",
         "base_url": "https://api.x.ai/v1",
@@ -623,11 +623,54 @@ class FinancialAgent:
         self.history: list[dict] = []
 
     def chat(self, message: str) -> str:
-        """Send a message and get a response (with tool-calling loop)."""
-        if self.api_type == "anthropic":
-            return self._chat_anthropic(message)
-        else:
-            return self._chat_openai(message)
+        """Send a message and get a response (with auto-fallback on 403)."""
+        try:
+            if self.api_type == "anthropic":
+                return self._chat_anthropic(message)
+            else:
+                return self._chat_openai(message)
+        except Exception as e:
+            if "403" in str(e) or "permission" in str(e).lower():
+                return self._retry_with_fallback(message, e)
+            raise
+
+    def _retry_with_fallback(self, message: str, original_error: Exception) -> str:
+        """Try other models in the provider's list when the selected model returns 403."""
+        models = self.provider_config["models"]
+        remaining = [m for m in models if m != self.model]
+        if not remaining:
+            raise original_error
+
+        print(f"  ⚠️  Model '{self.model}' not available on your key. Trying alternatives...")
+        for fallback in remaining:
+            try:
+                self.model = fallback
+                self.history = []  # Reset history for clean retry
+                print(f"  🔄 Trying {fallback}...")
+                if self.api_type == "anthropic":
+                    result = self._chat_anthropic(message)
+                else:
+                    result = self._chat_openai(message)
+                print(f"  ✅ Switched to {fallback}")
+                # Save working model to .env for next time
+                self._save_working_model(fallback)
+                return result
+            except Exception as retry_err:
+                if "403" in str(retry_err) or "permission" in str(retry_err).lower():
+                    continue
+                raise
+
+        raise original_error
+
+    def _save_working_model(self, model: str):
+        """Update .env with the model that actually worked."""
+        from pathlib import Path
+        env_path = Path(".env")
+        if env_path.exists():
+            lines = env_path.read_text().splitlines()
+            new_lines = [l for l in lines if not l.startswith("MODEL=")]
+            new_lines.append(f"MODEL={model}")
+            env_path.write_text("\n".join(new_lines) + "\n")
 
     # ── Anthropic (Claude) ──────────────────────────────────────────────
 

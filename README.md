@@ -121,7 +121,7 @@ Choose your provider **and** your model. Every provider supports multiple models
 | 🟣 **Anthropic** | `claude-sonnet-4` · `claude-haiku-3` | [console.anthropic.com](https://console.anthropic.com/) |
 | 🟢 **OpenAI** | `gpt-4o` · `gpt-4o-mini` · `gpt-4-turbo` | [platform.openai.com](https://platform.openai.com/api-keys) |
 | 🔵 **Google** | `gemini-2.5-flash` · `gemini-2.0-flash` · `gemini-2.5-pro` | [aistudio.google.com](https://aistudio.google.com/apikey) |
-| ⚫ **xAI** | `grok-4` · `grok-3` · `grok-3-fast` | [console.x.ai](https://console.x.ai/) |
+| ⚫ **xAI** | `grok-4-1-fast` · `grok-4-1-reasoning` · `grok-3-fast` | [console.x.ai](https://console.x.ai/) |
 
 All providers share the **same 16-tool architecture**. Gemini and Grok use OpenAI-compatible endpoints, so just two SDKs (`anthropic` + `openai`) handle everything.
 
