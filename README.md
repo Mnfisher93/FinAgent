@@ -1,7 +1,7 @@
 <p align="center">
   <h1 align="center">💹 FinAgent</h1>
   <p align="center">
-    <strong>Quantitative AI finance agent — multi-provider LLM architecture (Claude, GPT-4, Gemini, Grok) with 15 tool-calling capabilities for equities, crypto, prediction markets & algorithmic backtesting</strong>
+    <strong>Quantitative AI finance agent — multi-provider LLM architecture (Claude, GPT-4, Gemini, Grok) with 16 tool-calling capabilities for equities, crypto, prediction markets, options & algorithmic backtesting</strong>
   </p>
   <p align="center">
     Stocks · Crypto · Prediction Markets · Quantitative Analysis · ML Signals · Backtesting
@@ -41,6 +41,7 @@ FinAgent is a **terminal-based quantitative analysis assistant** that leverages 
 | **Quant Analysis** | `analyze_asset` · `analyze_time_series` · `compare_assets` | Computed |
 | **Machine Learning** | `run_regression` · `run_clustering_pca` · `run_feature_importance` | Computed |
 | **Signals & Backtesting** | `generate_signals` · `backtest_strategy` | Computed |
+| **Options** | `get_options_chain` | Yahoo Finance |
 
 ### 📈 Analysis Depth
 - **Risk Metrics** — Sharpe, Sortino, Calmar ratios, VaR (historical + parametric + Monte Carlo), CVaR

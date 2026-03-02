@@ -1,6 +1,6 @@
 # 📋 FinAgent — Full Capabilities
 
-> **15 autonomous AI tools** across real-time market data, quantitative risk analysis, machine learning, trading signals, and strategy backtesting — powered by your choice of LLM provider.
+> **16 autonomous AI tools** across real-time market data, options chains, quantitative risk analysis, machine learning, trading signals, and strategy backtesting — powered by your choice of LLM provider.
 
 ---
 
@@ -19,7 +19,7 @@ Set **one** key in your `.env` — the agent auto-detects your provider.
 
 ---
 
-## 📊 All 15 Tools
+## 📊 All 16 Tools
 
 ### Market Data (Tools 1–7)
 
@@ -55,6 +55,12 @@ Set **one** key in your `.env` — the agent auto-detects your provider.
 |---|------|-------------|---------|
 | 14 | `generate_signals` | Composite buy/sell signals | SMA crossover, EMA crossover, RSI, MACD, Bollinger → weighted score (−1.0 to +1.0) |
 | 15 | `backtest_strategy` | Strategy backtesting engine | SMA/EMA crossover or compare all — vs. buy-and-hold, custom windows |
+
+### Options (Tool 16)
+
+| # | Tool | Description | Source | API Key? |
+|---|------|-------------|--------|----------|
+| 16 | `get_options_chain` | Full options chain: calls, puts, put/call ratio, IV summary, ATM options, most active contracts, sentiment | Yahoo Finance | ❌ Free |
 
 ---
 

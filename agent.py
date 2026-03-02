@@ -530,15 +530,15 @@ PROVIDERS = {
         "env_key": "ANTHROPIC_API_KEY",
         "label": "Anthropic (Claude)",
         "emoji": "🟣",
-        "default_model": "claude-sonnet-4-20250514",
+        "models": ["claude-sonnet-4-20250514", "claude-haiku-3-20250414"],
         "url": "https://console.anthropic.com/",
         "api_type": "anthropic",
     },
     "openai": {
         "env_key": "OPENAI_API_KEY",
-        "label": "OpenAI (GPT-4o)",
+        "label": "OpenAI (GPT)",
         "emoji": "🟢",
-        "default_model": "gpt-4o",
+        "models": ["gpt-4o", "gpt-4o-mini", "gpt-4-turbo"],
         "url": "https://platform.openai.com/api-keys",
         "api_type": "openai",
         "base_url": None,
@@ -547,7 +547,7 @@ PROVIDERS = {
         "env_key": "GEMINI_API_KEY",
         "label": "Google (Gemini)",
         "emoji": "🔵",
-        "default_model": "gemini-2.0-flash",
+        "models": ["gemini-2.5-flash", "gemini-2.0-flash", "gemini-2.5-pro"],
         "url": "https://aistudio.google.com/apikey",
         "api_type": "openai",
         "base_url": "https://generativelanguage.googleapis.com/v1beta/openai/",
@@ -556,7 +556,7 @@ PROVIDERS = {
         "env_key": "XAI_API_KEY",
         "label": "xAI (Grok)",
         "emoji": "⚫",
-        "default_model": "grok-3-mini-fast",
+        "models": ["grok-4", "grok-3", "grok-3-fast"],
         "url": "https://console.x.ai/",
         "api_type": "openai",
         "base_url": "https://api.x.ai/v1",
@@ -573,11 +573,11 @@ class FinancialAgent:
     Interactive financial agent — designed for Claude, works with any major LLM.
 
     Auto-detects which API key is set and uses that provider.
-    Supports: Anthropic (Claude), OpenAI (GPT-4o), Google (Gemini), xAI (Grok).
-    15 tools for market data, quantitative analysis, ML, signals, and backtesting.
+    Supports: Anthropic (Claude), OpenAI (GPT-4), Google (Gemini), xAI (Grok).
+    16 tools for market data, options, quantitative analysis, ML, signals, and backtesting.
     """
 
-    def __init__(self):
+    def __init__(self, model: str | None = None):
         # Try providers in priority order (Claude first)
         self.provider_config = None
         self.api_key = None
@@ -603,7 +603,8 @@ class FinancialAgent:
                 f"Get keys at:\n{url_list}"
             )
 
-        self.model = os.environ.get("MODEL", self.provider_config["default_model"])
+        # Model priority: MODEL env override → explicit param → first in provider list
+        self.model = os.environ.get("MODEL") or model or self.provider_config["models"][0]
         self.api_type = self.provider_config["api_type"]
         print(f"  {self.provider_config['emoji']} Provider: {self.provider_config['label']} ({self.model})")
 
