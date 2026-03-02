@@ -10,8 +10,8 @@ Supports multiple LLM providers (designed for Claude, works with all):
 The agent auto-detects which key you have and uses that provider.
 
 15 tools: market data (stocks, crypto, prediction markets), quantitative
-analysis, time series modeling, machine learning, trading signals, and
-strategy backtesting.
+analysis, time series modeling, machine learning, trading signals,
+strategy backtesting, and options chain analysis.
 """
 
 import json
@@ -26,6 +26,7 @@ from dotenv import load_dotenv
 from scrapers.stock_scraper import get_stock_quote, get_stock_history, get_stock_info
 from scrapers.crypto_scraper import get_crypto_price, get_crypto_top_n, search_crypto
 from scrapers.polymarket_scraper import fetch_polymarket_data
+from scrapers.options_scraper import get_options_chain
 from analysis.quant_analysis import QuantAnalyzer
 from analysis.time_series import TimeSeriesAnalyzer
 from analysis.advanced_stats import (
@@ -246,6 +247,18 @@ TOOLS_SPEC = [
                 "initial_capital": {"type": "number", "description": "Starting capital in USD (default: 10000)", "default": 10000}
             },
             "required": ["ticker", "strategy"]
+        }
+    },
+    {
+        "name": "get_options_chain",
+        "description": "Get options chain data for any US stock. Returns calls, puts, put/call ratio, implied volatility summary, ATM options, most active contracts, and sentiment. Uses Yahoo Finance — no API key needed.",
+        "parameters": {
+            "type": "object",
+            "properties": {
+                "ticker": {"type": "string", "description": "Stock ticker (e.g., 'AAPL', 'TSLA', 'NVDA')"},
+                "expiration": {"type": "string", "description": "Expiration date (YYYY-MM-DD). If omitted, uses the nearest expiration."}
+            },
+            "required": ["ticker"]
         }
     },
 ]
@@ -472,6 +485,13 @@ def execute_tool(name: str, args: dict) -> str:
                 short = args.get("short_window", 50)
                 long = args.get("long_window", 200)
                 result = backtest_sma_crossover(df["Close"], short, long, capital, ticker)
+            return json.dumps(result, indent=2, default=str)
+
+
+        elif name == "get_options_chain":
+            ticker = args["ticker"]
+            expiration = args.get("expiration")
+            result = get_options_chain(ticker, expiration=expiration)
             return json.dumps(result, indent=2, default=str)
 
         else:
