@@ -90,33 +90,120 @@ Agent → SMA 50/200 Crossover on NVDA (5Y):
 
 ## 🚀 Getting Started
 
-### Prerequisites
+### What You'll Need
 
-| Requirement | Details |
-|-------------|---------|
-| **Python** | 3.13+ |
-| **Package Manager** | [uv](https://docs.astral.sh/uv/) |
-| **LLM API Key** | Any one of: [Anthropic](https://console.anthropic.com/) · [OpenAI](https://platform.openai.com/) · [Google AI](https://aistudio.google.com/apikey) · [xAI](https://console.x.ai/) |
+| Requirement | What It Is | Where to Get It |
+|-------------|-----------|-----------------|
+| **Python 3.13+** | Programming language | [python.org/downloads](https://www.python.org/downloads/) |
+| **uv** | Package manager (handles all dependencies for you) | Step 1 below |
+| **An LLM API Key** | Lets the AI brain work — pick **any one** provider | Step 4 below |
 
-### Installation
+### Step 1 · Install `uv` (package manager)
+
+> Skip this if you already have `uv` installed. You can check by running `uv --version`.
+
+**macOS / Linux:**
+```bash
+curl -LsSf https://astral.sh/uv/install.sh | sh
+```
+
+**Windows (PowerShell):**
+```powershell
+powershell -ExecutionPolicy ByPass -c "irm https://astral.sh/uv/install.ps1 | iex"
+```
+
+**Or via Homebrew (macOS):**
+```bash
+brew install uv
+```
+
+### Step 2 · Clone the repository
 
 ```bash
-# 1. Install uv (skip if you already have it)
-curl -LsSf https://astral.sh/uv/install.sh | sh
-
-# 2. Clone the repository
 git clone https://github.com/Mnfisher93/FinAgent.git
+```
+
+### Step 3 · Navigate into the project folder
+
+```bash
 cd FinAgent
+```
 
-# 3. Set up your API key
+### Step 4 · Set up your API key
+
+You need **one** AI provider key. Pick whichever you prefer:
+
+| Provider | Get Your Key | Free Tier? |
+|----------|-------------|------------|
+| 🟣 Anthropic (Claude) | [console.anthropic.com](https://console.anthropic.com/) | $5 credit |
+| 🟢 OpenAI (GPT-4) | [platform.openai.com/api-keys](https://platform.openai.com/api-keys) | Pay-as-you-go |
+| 🔵 Google (Gemini) | [aistudio.google.com/apikey](https://aistudio.google.com/apikey) | ✅ Free |
+| ⚫ xAI (Grok) | [console.x.ai](https://console.x.ai/) | Free credits |
+
+First, create your config file from the template:
+
+```bash
 cp .env.example .env
-# Edit .env — set ONE of: ANTHROPIC_API_KEY, OPENAI_API_KEY, GEMINI_API_KEY, or XAI_API_KEY
+```
 
-# 4. Run the agent
+Now open the `.env` file and paste your API key. Choose **one** of these methods:
+
+<details>
+<summary><strong>Option A — Open in a text editor (easiest)</strong></summary>
+
+**macOS:**
+```bash
+open .env
+```
+
+**Windows:**
+```bash
+notepad .env
+```
+
+**Linux:**
+```bash
+nano .env
+```
+
+This opens the file. Find the line for your provider and replace `your-api-key-here` with your actual key. Save and close.
+
+</details>
+
+<details>
+<summary><strong>Option B — Set it directly from the terminal (one command)</strong></summary>
+
+Pick the command that matches your provider:
+
+**Claude (Anthropic):**
+```bash
+echo 'ANTHROPIC_API_KEY=sk-ant-your-key-here' > .env
+```
+
+**GPT-4 (OpenAI):**
+```bash
+echo 'OPENAI_API_KEY=sk-your-key-here' > .env
+```
+
+**Gemini (Google):**
+```bash
+echo 'GEMINI_API_KEY=your-key-here' > .env
+```
+
+**Grok (xAI):**
+```bash
+echo 'XAI_API_KEY=xai-your-key-here' > .env
+```
+
+</details>
+
+### Step 5 · Run the agent
+
+```bash
 uv run main.py
 ```
 
-> `uv` handles all dependency resolution and virtual environment creation automatically — no manual `pip install` required.
+> `uv` automatically installs all dependencies and creates a virtual environment for you — no manual `pip install` needed. The first run may take 30–60 seconds to set up.
 
 ---
 
