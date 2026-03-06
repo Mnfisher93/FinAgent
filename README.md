@@ -1,5 +1,5 @@
 <p align="center">
-  <h1 align="center">💹 FinAgent</h1>
+  <h1 align="center">💹 Quantitative Fintech MultiAgent</h1>
   <p align="center">
     <strong>Quantitative AI finance agent — multi-provider LLM architecture (Claude, GPT-4, Gemini, Grok) with 16 tool-calling capabilities for equities, crypto, options, prediction markets & algorithmic backtesting</strong>
   </p>
